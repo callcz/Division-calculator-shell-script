@@ -4,19 +4,61 @@
 if [[ $1 == '--help' || $1 == '-h' || ! $1 ]]
 then
 	head -n3 $0
-	echo "  Usage: $0 [DIVIDEND] [DIVISOR] [SCALE]"
-	echo "  Default SCALE val is '10'"
+	echo "
+Usage: $0 [OPTIONS] [DIVIDEND] [DIVISOR] [SCALE]
+	Default SCALE val is '10'
+	example:
+		\`$0 3 2 1\` as '3 / 2 scale=1'
+options:
+  -	Using shell pipes as input sources.
+	example: \`echo 3 2 1| $0 - - -\` as '3 / 2 scale=1'
+		 \`echo 3| $0 - 2\` as '3 / 2 scale=10'
+		 \`echo 0.2| $0 3 - 4\` as '3 / 0.2 scale=4'
+		 \`echo 16| $0 3 2 -\` as '3 / 2 scale=16'
+  --help,-h	List this help.
+"
 	exit
 fi
-#检查参数格式是否数字
-if [[ $4 ]];then echo Unknow option - \"$4\"&&exit 1;fi
+#处理管道
 div_proto=($*)
-div=(${div_proto[@]})
-for ((i=0;i<${#div[@]};i++))
+if [[ $1 == '-' || $2 == '-' || $3 == '-' ]]
+then
+	while read f
+	do
+		f=($f)
+#		div_proto=($f ${div_proto[@]})
+		if [[ $1 == '-' ]]
+		then
+			div_proto[0]=${f[0]}
+			f[0]=
+			f=(${f[@]})
+		fi
+		if [[ $2 == '-' ]]
+		then
+			div_proto[1]=${f[0]}
+			f[0]=
+			f=(${f[@]})
+		fi
+		if [[ $3 == '-' ]]
+		then
+			div_proto[2]=${f[0]}
+			unset f
+		fi	
+	done
+fi
+if [[ ${#div_proto} -gt 3 ]]
+then
+	div=(${div_proto[0]} ${div_proto[1]} ${div_proto[2]})
+else
+	div=(${div_proto[@]})
+fi
+#echo ${div[@]}
+#处理负数
+for ((i=0;i<2;i++))
 do
 	for j in ${div[$i]}
 	do
-		if [[ ${j:0:1} == '-' ]]
+		if [[ ${j:0:1} == '-' && ${#j} -ne 1 ]]
 		then
 			minus_n=$(expr $minus_n + 1)
 			div[$i]=${j#-}
@@ -31,6 +73,7 @@ else
 	minus=0
 fi
 #echo $minus
+#检查参数格式是否数字
 for ((i=0;i<${#div[@]};i++))
 do
 #	echo $i
@@ -78,7 +121,7 @@ divisor=${div[1]}
 scale=${div[2]}
 beichu=$dividend
 chu=$divisor
-if [[ ! $3 ]]
+if [[ ! $scale ]]
 then
 	scale=10
 fi
