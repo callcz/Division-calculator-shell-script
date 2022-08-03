@@ -10,12 +10,33 @@ then
 fi
 #检查参数格式是否数字
 if [[ $4 ]];then echo Unknow option - \"$4\"&&exit 1;fi
-div=($*)
+div_proto=($*)
+div=(${div_proto[@]})
+for ((i=0;i<${#div[@]};i++))
+do
+	for j in ${div[$i]}
+	do
+		if [[ ${j:0:1} == '-' ]]
+		then
+			minus_n=$(expr $minus_n + 1)
+			div[$i]=${j#-}
+		fi
+	done
+done
+#echo ${div[@]}
+if [[ $(expr ${minus_n:-0} % 2) -ne 0 ]]
+then
+	minus=1
+else
+	minus=0
+fi
+#echo $minus
 for ((i=0;i<${#div[@]};i++))
 do
 #	echo $i
 	for j in ${div[$i]}
 	do
+		unset check_1
 #		echo $j
 #		echo ${#j}
 		for ((k=0;k<${#j};k++))
@@ -32,20 +53,29 @@ do
 				elif [[ $m == $l ]]
 				then
 					check=1
+					if [[ $l == '.' ]]
+					then
+						check_1=$(expr $check_1 + 1)
+					fi
 				fi
 			done
 			if [[ $check == 0 ]]
 			then
-				echo \"$j\" is no a figure.
+				echo \"${div_proto[$i]}\" is no a figure.
 				exit $(expr $i + 2)
+			fi
+			if [[ $check_1 -gt 1 ]]
+			then
+				echo "There are more then one '.' in '${div_proto[$i]}'"
+				exit $(expr $i + 1)
 			fi
 		done
 	done
 done
 
-dividend=$1
-divisor=$2
-scale=$3
+dividend=${div[0]}
+divisor=${div[1]}
+scale=${div[2]}
 beichu=$dividend
 chu=$divisor
 if [[ ! $3 ]]
@@ -208,5 +238,9 @@ do
 done
 #输出得数
 echo scale=$scale
+if [[ $minus -eq 1 ]]
+then
+	deshu='-'$deshu
+fi
 echo $deshu
 exit
