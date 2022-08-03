@@ -237,7 +237,7 @@ do
 	fi
 done
 #输出得数
-echo scale=$scale
+#echo scale=$scale
 if [[ $minus -eq 1 ]]
 then
 	deshu='-'$deshu
