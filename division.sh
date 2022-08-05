@@ -184,7 +184,20 @@ done
 #echo $beichu $chu
 #D/d
 shang=$(expr $beichu \/ $chu)
+error=$?
+#echo $error
+if [[ $error -ne 0 && $error -ne 1 ]]
+then
+echo 'expr error'
+exit $error
+fi
 yu=$(expr $beichu % $chu)
+error=$?
+if [[ $error -ne 0 && $error -ne 1 ]]
+then
+echo 'expr error'
+exit $error
+fi
 #echo shang=$shang yu=$yu
 #余数为0，可以被整除
 if [[ $yu -eq 0 ]]
